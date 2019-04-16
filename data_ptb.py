@@ -88,7 +88,7 @@ class Corpus(object):
         self.dictionary=dictionary
         #self.train, self.train_sens, self.train_trees, self.train_nltktrees = self.tokenize(train_file_ids)
         #self.valid, self.valid_sens, self.valid_trees, self.valid_nltktress = self.tokenize(valid_file_ids)
-        self.test, self.test_sens, self.test_trees, self.test_nltktrees = self.tokenize(test_file_ids)
+        self.test, self.test_sens, self.test_trees, self.test_nltktrees = self.tokenize(valid_file_ids)
         #self.rest, self.rest_sens, self.rest_trees, self.rest_nltktrees = self.tokenize(rest_file_ids)
 
     def filter_words(self, tree):
