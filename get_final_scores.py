@@ -188,8 +188,8 @@ if __name__ == '__main__':
     pretrain_tasks, target_tasks, vocab, word_embs = build_tasks(clargs)
     tasks = sorted(set(pretrain_tasks + target_tasks), key=lambda x: x.name)
     model = build_model(clargs, vocab, word_embs, tasks)
-    for i in range(0, 100, args.eval_every)
-       if os.path.exists(os.path.join(clargs.run_dir, "model_state_main_epoch_" + str())) == False:
+    for i in range(0, 100, args.eval_every):
+        if os.path.exists(os.path.join(clargs.run_dir, "model_state_main_epoch_" + str())) == False:
             continue
         else:
             print("Epoch " + str(i) + ":\n")
