@@ -1,5 +1,7 @@
 import data_ptb as data
 import nltk
+import sys
+sys.path.append("../rjiant/jiant/")
 import glob
 from src.utils import config
 from src.models import build_model
@@ -188,13 +190,13 @@ if __name__ == '__main__':
     pretrain_tasks, target_tasks, vocab, word_embs = build_tasks(clargs)
     tasks = sorted(set(pretrain_tasks + target_tasks), key=lambda x: x.name)
     model = build_model(clargs, vocab, word_embs, tasks)
-    for i in range(0, 100, args.eval_every):
-        if os.path.exists(os.path.join(clargs.run_dir, "model_state_main_epoch_" + str())) == False:
+    for j in range(1, 200, args.eval_every):
+        if os.path.exists(os.path.join(clargs.run_dir, "model_state_main_epoch_" + str(j)+".th")) == False:
             continue
         else:
-            print("Epoch " + str(i) + ":\n")
+            print("Epoch " + str(j) + ":\n")
         macro_best = glob.glob(os.path.join(clargs.run_dir,
-                                            "model_state_main_epoch*"))
+                                            "model_state_main_epoch_"+str(j)+".th"))
         load_model_state(model, macro_best[-1], args.cuda)
         corpus = data.Corpus(vocab._token_to_index['tokens'])
         f1_list = [[], [], []]
