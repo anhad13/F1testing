@@ -14,6 +14,7 @@ from allennlp.data.token_indexers import \
     TokenCharactersIndexer
 import os
 import sys
+from parse_comparison import corpus_stats_labeled, corpus_average_depth
 
 sys.path.append(os.path.realpath(os.path.dirname(__file__)+"/../../"))
 from src.preprocess import build_tasks
@@ -291,6 +292,8 @@ if __name__ == '__main__':
     f1_list=[[],[],[]]
     prec_list=[]
     reca_list=[]
+    corpus_sys = {}
+    corpus_ref = {}
     model.eval();bucket=[{10:[],20:[],30:[],40:[],50:[],500:[] },{10:[],20:[],30:[],40:[],50:[],500:[] },{10:[],20:[],30:[],40:[],50:[],500:[] }]
     for i in range(len(corpus.test)):
         st=corpus.test[i].reshape(1, -1).cuda()
@@ -315,6 +318,8 @@ if __name__ == '__main__':
             parse_tree = build_tree(dc.cpu().detach(), sen_cut)
             model_out, _ = get_brackets(parse_tree)
             std_out, _  = get_brackets(sen_tree)
+            corpus_sys[nsens] = MRG(parse_tree)
+            corpus_ref[nsens] = MRG_labeled(corpus.nltktrees[i])
             overlap = model_out.intersection(std_out)
             prec = float(len(overlap)) / (len(model_out) + 1e-8)
             reca = float(len(overlap)) / (len(std_out) + 1e-8)
@@ -346,3 +351,11 @@ if __name__ == '__main__':
             print(mean(bucket[layerId][x]))
             print("-"+str(len(bucket[layerId][x]))+"\n")  
         print("\n")
+    correct, total = corpus_stats_labeled(corpus_sys, corpus_ref)
+    print(correct)
+    print(total)
+    print('ADJP:', correct['ADJP'], total['ADJP'])
+    print('NP:', correct['NP'], total['NP'])
+    print('PP:', correct['PP'], total['PP'])
+    print('INTJ:', correct['INTJ'], total['INTJ'])
+    print(corpus_average_depth(corpus_sys))
