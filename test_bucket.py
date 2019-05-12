@@ -109,9 +109,9 @@ def get_brackets(tree, idx=0):
         return brackets, idx + 1
 
 def MRG(tr):
-    if isinstance(tr, str):
+    if isinstance(tr, torch.Tensor):
         #return '(' + tr + ')'
-        return tr + ' '
+        return str(int(tr)) + ' '
     else:
         s = '( '
         for subtr in tr:
@@ -286,14 +286,14 @@ if __name__ == '__main__':
     tasks = sorted(set(pretrain_tasks + target_tasks), key=lambda x: x.name)
     model = build_model(clargs, vocab, word_embs, tasks)
     macro_best = glob.glob(os.path.join(clargs.run_dir,
-                                                "model_state_main_epoch_327.th"))
+                                                "model_*best_macro*th"))
     load_model_state(model,macro_best[-1],args.cuda)
     corpus=data.Corpus(vocab._token_to_index['tokens'])
     f1_list=[[],[],[]]
     prec_list=[]
     reca_list=[]
-    corpus_sys = {}
-    corpus_ref = {}
+    corpus_sys = [{},{},{}]
+    corpus_ref = [{}, {},{}]
     model.eval();bucket=[{10:[],20:[],30:[],40:[],50:[],500:[] },{10:[],20:[],30:[],40:[],50:[],500:[] },{10:[],20:[],30:[],40:[],50:[],500:[] }]
     for i in range(len(corpus.test)):
         st=corpus.test[i].reshape(1, -1).cuda()
@@ -317,9 +317,9 @@ if __name__ == '__main__':
             sen_tree = corpus.test_trees[i]
             parse_tree = build_tree(dc.cpu().detach(), sen_cut)
             model_out, _ = get_brackets(parse_tree)
-            std_out, _  = get_brackets(sen_tree)
-            corpus_sys[nsens] = MRG(parse_tree)
-            corpus_ref[nsens] = MRG_labeled(corpus.nltktrees[i])
+            std_out, _  = get_brackets(sen_tree)#;import pdb;pdb.set_trace()
+            corpus_sys[layerID][i] = MRG(parse_tree)
+            corpus_ref[layerID][i] = MRG_labeled(corpus.test_nltktrees[i])
             overlap = model_out.intersection(std_out)
             prec = float(len(overlap)) / (len(model_out) + 1e-8)
             reca = float(len(overlap)) / (len(std_out) + 1e-8)
@@ -340,7 +340,7 @@ if __name__ == '__main__':
             	bucket[layerID][50].append(f1)
             else:
             	bucket[layerID][500].append(f1)
-            f1_list[layerID].append(f1)
+            f1_list[layerID].append(f1)#;print(f1)
 
     print("\n")
     for layerId in [0, 1, 2]:
@@ -351,7 +351,8 @@ if __name__ == '__main__':
             print(mean(bucket[layerId][x]))
             print("-"+str(len(bucket[layerId][x]))+"\n")  
         print("\n")
-    correct, total = corpus_stats_labeled(corpus_sys, corpus_ref)
+    import pdb;pdb.set_trace()
+    correct, total = corpus_stats_labeled(corpus_sys[2], corpus_ref[2])
     print(correct)
     print(total)
     print('ADJP:', correct['ADJP'], total['ADJP'])
