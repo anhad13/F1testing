@@ -339,19 +339,19 @@ if __name__ == '__main__':
             elif lsen<=30:
                 corpus_sys[layerID][30][i] = MRG(parse_tree)
                 corpus_ref[layerID][30][i] = MRG_labeled(corpus.test_nltktrees[i])
-            	bucket[layerID][30].append(f1)
+                bucket[layerID][30].append(f1)
             elif lsen<=40:
                 corpus_sys[layerID][40][i] = MRG(parse_tree)
                 corpus_ref[layerID][40][i] = MRG_labeled(corpus.test_nltktrees[i])
-            	bucket[layerID][40].append(f1)
+                bucket[layerID][40].append(f1)
             elif lsen<=50:
                 corpus_sys[layerID][50][i] = MRG(parse_tree)
                 corpus_ref[layerID][50][i] = MRG_labeled(corpus.test_nltktrees[i])
-            	bucket[layerID][50].append(f1)
+                bucket[layerID][50].append(f1)
             else:
                 corpus_sys[layerID][500][i] = MRG(parse_tree)
                 corpus_ref[layerID][500][i] = MRG_labeled(corpus.test_nltktrees[i])
-            	bucket[layerID][500].append(f1)
+                bucket[layerID][500].append(f1)
             f1_list[layerID].append(f1)#;print(f1)
 
     print("\n")
