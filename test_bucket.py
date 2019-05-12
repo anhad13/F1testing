@@ -292,8 +292,8 @@ if __name__ == '__main__':
     f1_list=[[],[],[]]
     prec_list=[]
     reca_list=[]
-    corpus_sys = [{},{},{}]
-    corpus_ref = [{}, {},{}]
+    corpus_sys = [{10:{},20:{},30:{},40:{},50:{},500:{} }, {10:{},20:{},30:{},40:{},50:{},500:{} },{10:{},20:{},30:{},40:{},50:{},500:{} }]
+    corpus_ref = [{10:{},20:{},30:{},40:{},50:{},500:{} }, {10:{},20:{},30:{},40:{},50:{},500:{} },{10:{},20:{},30:{},40:{},50:{},500:{} }]
     model.eval();bucket=[{10:[],20:[],30:[],40:[],50:[],500:[] },{10:[],20:[],30:[],40:[],50:[],500:[] },{10:[],20:[],30:[],40:[],50:[],500:[] }]
     for i in range(len(corpus.test)):
         st=corpus.test[i].reshape(1, -1).cuda()
@@ -318,8 +318,8 @@ if __name__ == '__main__':
             parse_tree = build_tree(dc.cpu().detach(), sen_cut)
             model_out, _ = get_brackets(parse_tree)
             std_out, _  = get_brackets(sen_tree)#;import pdb;pdb.set_trace()
-            corpus_sys[layerID][i] = MRG(parse_tree)
-            corpus_ref[layerID][i] = MRG_labeled(corpus.test_nltktrees[i])
+            #corpus_sys[layerID][i] = MRG(parse_tree)
+            #corpus_ref[layerID][i] = MRG_labeled(corpus.test_nltktrees[i])
             overlap = model_out.intersection(std_out)
             prec = float(len(overlap)) / (len(model_out) + 1e-8)
             reca = float(len(overlap)) / (len(std_out) + 1e-8)
@@ -329,16 +329,28 @@ if __name__ == '__main__':
                     prec = 1.
             f1 = 2 * prec * reca / (prec + reca + 1e-8)
             if lsen<=10:
+                corpus_sys[layerID][10][i] = MRG(parse_tree)
+                corpus_ref[layerID][10][i] = MRG_labeled(corpus.test_nltktrees[i])
             	bucket[layerID][10].append(f1)
             elif lsen<=20:
+                corpus_sys[layerID][20][i] = MRG(parse_tree)
+                corpus_ref[layerID][20][i] = MRG_labeled(corpus.test_nltktrees[i])
             	bucket[layerID][20].append(f1)
             elif lsen<=30:
+                corpus_sys[layerID][30][i] = MRG(parse_tree)
+                corpus_ref[layerID][30][i] = MRG_labeled(corpus.test_nltktrees[i])
             	bucket[layerID][30].append(f1)
             elif lsen<=40:
+                corpus_sys[layerID][40][i] = MRG(parse_tree)
+                corpus_ref[layerID][40][i] = MRG_labeled(corpus.test_nltktrees[i])
             	bucket[layerID][40].append(f1)
             elif lsen<=50:
+                corpus_sys[layerID][50][i] = MRG(parse_tree)
+                corpus_ref[layerID][50][i] = MRG_labeled(corpus.test_nltktrees[i])
             	bucket[layerID][50].append(f1)
             else:
+                corpus_sys[layerID][500][i] = MRG(parse_tree)
+                corpus_ref[layerID][500][i] = MRG_labeled(corpus.test_nltktrees[i])
             	bucket[layerID][500].append(f1)
             f1_list[layerID].append(f1)#;print(f1)
 
@@ -350,13 +362,13 @@ if __name__ == '__main__':
             print("x:" +str(x))
             print(mean(bucket[layerId][x]))
             print("-"+str(len(bucket[layerId][x]))+"\n")  
-        print("\n")
-        correct, total = corpus_stats_labeled(corpus_sys[layerId], corpus_ref[layerId])
-        print(correct)
-        print(total)
-        print('ADJP:', correct['ADJP'], total['ADJP'])
-        print('NP:', correct['NP'], total['NP'])
-        print('PP:', correct['PP'], total['PP'])
-        print('INTJ:', correct['INTJ'], total['INTJ'])
-        print(corpus_average_depth(corpus_sys[layerId]))
-        print("\n")
+            print("\n")
+            correct, total = corpus_stats_labeled(corpus_sys[layerId][x], corpus_ref[layerId][x])
+            print(correct)
+            print(total)
+            print('ADJP:', correct['ADJP'], total['ADJP'])
+            print('NP:', correct['NP'], total['NP'])
+            print('PP:', correct['PP'], total['PP'])
+            print('INTJ:', correct['INTJ'], total['INTJ'])
+            print(corpus_average_depth(corpus_sys[layerId][x]))
+            print("\n")
