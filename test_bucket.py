@@ -143,7 +143,7 @@ def tokens_to_bal(tree):
         return tree[0]
     else:
         lent = len(tree)
-        return [tokens_to_bal(tree[:lent/2]), tokens_to_bal(tree[lent/2:])]
+        return [tokens_to_bal(tree[:int(lent/2)]), tokens_to_bal(tree[int(lent/2):])]
 
 
 def get_lb(tokens):
@@ -339,12 +339,12 @@ if __name__ == '__main__':
     tasks = sorted(set(pretrain_tasks + target_tasks), key=lambda x: x.name)
     model = build_model(clargs, vocab, word_embs, tasks)
     macro_best = glob.glob(os.path.join(clargs.run_dir,
-                                                "model_**327*th"))
+                                                "model_*best*th"))
     load_model_state(model,macro_best[-1],args.cuda)
     corpus=data.Corpus(vocab._token_to_index['tokens'])
     f1_list=[[],[],[]]
     lb_list=[[],[],[]]
-    rl_list=[[],[],[]]
+    rb_list=[[],[],[]]
     bal_list=[[],[],[]]
     prec_list=[]
     reca_list=[]
@@ -376,16 +376,16 @@ if __name__ == '__main__':
             std_out, _  = get_brackets(sen_tree)#;import pdb;pdb.set_trace()
             #corpus_sys[layerID][i] = MRG(parse_tree)
             #corpus_ref[layerID][i] = MRG_labeled(corpus.test_nltktrees[i])
-            overlap = model_out.intersection(std_out)
+            overlap = model_out.intersection(std_out);f1=compute_f1(overlap, model_out, std_out)
             f1_list[layerID].append(compute_f1(overlap, model_out, std_out))
-            lbout, _ = get_brackets(tokens_to_lb(sen_cut))
-            overlap = model_out.intersection(lbout)
-            lb_list[layerID].append(compute_f1(overlap, lb_out, std_out))
-            rbout, _ = get_brackets(tokens_to_rb(sen_cut))
+            lbout, _ = get_brackets(tokens_to_lb(list(sen_cut)))
+            overlap = model_out.intersection(lbout);import pdb;pdb.set_trace()
+            lb_list[layerID].append(compute_f1(overlap, lbout, std_out))
+            rbout, _ = get_brackets(tokens_to_rb(list(sen_cut)))
             overlap = model_out.intersection(rbout)
-            rb_list[layerID].append(compute_f1(overlap, rbout, std_out))
-            balout, _ = get_brackets(tokens_to_bal(sen_cut))
-            overlap = model_out.intersection(balout)
+            rb_list[layerID].append(compute_f1(overlap, rbout, std_out))#;import pdb;pdb.set_trace()
+            balout, _ = get_brackets(tokens_to_bal(list(sen_cut)))
+            overlap = model_out.intersection(balout)#;import pdb;pdb.set_trace()
             bal_list[layerID].append(compute_f1(overlap, balout, std_out))
 
             if lsen<=10:
