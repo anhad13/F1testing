@@ -119,6 +119,49 @@ def MRG(tr):
         s += ') '
         return s
 
+def tokens_to_lb(tree):
+    if type(tree) is not list:
+        return tree
+    if len(tree) == 1:
+        return tree[0]
+    else:
+        return [tokens_to_lb(tree[:-1]), tree[-1]]        
+
+
+def tokens_to_rb(tree):
+    if type(tree) is not list:
+        return tree
+    if len(tree) == 1:
+        return tree[0]
+    else:
+        return [tree[0], tokens_to_rb(tree[1:])]
+
+def tokens_to_bal(tree):
+    if type(tree) is not list:
+        return tree
+    if len(tree) == 1:
+        return tree[0]
+    else:
+        lent = len(tree)
+        return [tokens_to_bal(tree[:lent/2]), tokens_to_bal(tree[lent/2:])]
+
+
+def get_lb(tokens):
+    arr=[]
+    tmp=[]
+    stack=[]
+    tokens=tokens[::-1]
+    for x in transitions:
+        if x == 0:
+            #shift
+            stack.append(tokens.pop())
+        else:
+            a1=stack.pop()
+            a2=stack.pop()
+            stack.append([a2,a1])
+    return stack[0]
+
+
 def MRG_labeled(tr):
     if isinstance(tr, nltk.Tree):
         if tr.label() in word_tags:
@@ -250,6 +293,16 @@ def test(model, corpus, cuda, prt=False):
     return f1_list.mean(axis=0)
 
 
+def compute_f1(overlap, model_out, std_out):
+    prec = float(len(overlap)) / (len(model_out) + 1e-8)
+    reca = float(len(overlap)) / (len(std_out) + 1e-8)
+    if len(std_out) == 0:
+        reca = 1.
+        if len(model_out) == 0:
+            prec = 1.
+    f1 = 2 * prec * reca / (prec + reca + 1e-8)
+    return f1
+
 if __name__ == '__main__':
     marks = [' ', '-', '=']
 
@@ -290,6 +343,9 @@ if __name__ == '__main__':
     load_model_state(model,macro_best[-1],args.cuda)
     corpus=data.Corpus(vocab._token_to_index['tokens'])
     f1_list=[[],[],[]]
+    lb_list=[[],[],[]]
+    rl_list=[[],[],[]]
+    bal_list=[[],[],[]]
     prec_list=[]
     reca_list=[]
     corpus_sys = [{10:{},20:{},30:{},40:{},50:{},500:{} }, {10:{},20:{},30:{},40:{},50:{},500:{} },{10:{},20:{},30:{},40:{},50:{},500:{} }]
@@ -321,13 +377,17 @@ if __name__ == '__main__':
             #corpus_sys[layerID][i] = MRG(parse_tree)
             #corpus_ref[layerID][i] = MRG_labeled(corpus.test_nltktrees[i])
             overlap = model_out.intersection(std_out)
-            prec = float(len(overlap)) / (len(model_out) + 1e-8)
-            reca = float(len(overlap)) / (len(std_out) + 1e-8)
-            if len(std_out) == 0:
-                reca = 1.
-                if len(model_out) == 0:
-                    prec = 1.
-            f1 = 2 * prec * reca / (prec + reca + 1e-8)
+            f1_list[layerID].append(compute_f1(overlap, model_out, std_out))
+            lbout, _ = get_brackets(tokens_to_lb(sen_cut))
+            overlap = model_out.intersection(lbout)
+            lb_list[layerID].append(compute_f1(overlap, lb_out, std_out))
+            rbout, _ = get_brackets(tokens_to_rb(sen_cut))
+            overlap = model_out.intersection(rbout)
+            rb_list[layerID].append(compute_f1(overlap, rbout, std_out))
+            balout, _ = get_brackets(tokens_to_bal(sen_cut))
+            overlap = model_out.intersection(balout)
+            bal_list[layerID].append(compute_f1(overlap, balout, std_out))
+
             if lsen<=10:
                 corpus_sys[layerID][10][i] = MRG(parse_tree)
                 corpus_ref[layerID][10][i] = MRG_labeled(corpus.test_nltktrees[i])
@@ -352,12 +412,19 @@ if __name__ == '__main__':
                 corpus_sys[layerID][500][i] = MRG(parse_tree)
                 corpus_ref[layerID][500][i] = MRG_labeled(corpus.test_nltktrees[i])
                 bucket[layerID][500].append(f1)
-            f1_list[layerID].append(f1)#;print(f1)
 
     print("\n")
     for layerId in [0, 1, 2]:
         print("Layer " + str(layerId))
+        print("F1 w GT: ")
         print(mean(f1_list[layerId]))
+        print("F1 w LB: ")
+        print(mean(lb_list[layerId]))
+        print("F1 w RB: ")
+        print(mean(rb_list[layerId]))
+        print("F1 w BAL: ")
+        print(mean(bal_list[layerId]))
+        print("\n")
         for x in bucket[layerId].keys():
             print("x:" +str(x))
             print(mean(bucket[layerId][x]))
