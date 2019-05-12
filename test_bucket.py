@@ -286,7 +286,7 @@ if __name__ == '__main__':
     tasks = sorted(set(pretrain_tasks + target_tasks), key=lambda x: x.name)
     model = build_model(clargs, vocab, word_embs, tasks)
     macro_best = glob.glob(os.path.join(clargs.run_dir,
-                                                "model_*best_macro*th"))
+                                                "model_**327*th"))
     load_model_state(model,macro_best[-1],args.cuda)
     corpus=data.Corpus(vocab._token_to_index['tokens'])
     f1_list=[[],[],[]]
@@ -331,11 +331,11 @@ if __name__ == '__main__':
             if lsen<=10:
                 corpus_sys[layerID][10][i] = MRG(parse_tree)
                 corpus_ref[layerID][10][i] = MRG_labeled(corpus.test_nltktrees[i])
-            	bucket[layerID][10].append(f1)
+                bucket[layerID][10].append(f1)
             elif lsen<=20:
                 corpus_sys[layerID][20][i] = MRG(parse_tree)
                 corpus_ref[layerID][20][i] = MRG_labeled(corpus.test_nltktrees[i])
-            	bucket[layerID][20].append(f1)
+                bucket[layerID][20].append(f1)
             elif lsen<=30:
                 corpus_sys[layerID][30][i] = MRG(parse_tree)
                 corpus_ref[layerID][30][i] = MRG_labeled(corpus.test_nltktrees[i])
