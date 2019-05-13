@@ -348,9 +348,17 @@ if __name__ == '__main__':
     bal_list=[[],[],[]]
     prec_list=[]
     reca_list=[]
+    import time
+    timestamp=str(int(time.time()))
     corpus_sys = [{10:{},20:{},30:{},40:{},50:{},500:{} }, {10:{},20:{},30:{},40:{},50:{},500:{} },{10:{},20:{},30:{},40:{},50:{},500:{} }]
     corpus_ref = [{10:{},20:{},30:{},40:{},50:{},500:{} }, {10:{},20:{},30:{},40:{},50:{},500:{} },{10:{},20:{},30:{},40:{},50:{},500:{} }]
     model.eval();bucket=[{10:[],20:[],30:[],40:[],50:[],500:[] },{10:[],20:[],30:[],40:[],50:[],500:[] },{10:[],20:[],30:[],40:[],50:[],500:[] }]
+    file0=open(clargs.exp_name+"_"+clargs.run_name+"Layer_0"+timestamp,"wb")
+    file1=open(clargs.exp_name+"_"+clargs.run_name+"Layer_1"+timestamp,"wb")
+    file2=open(clargs.exp_name+"_"+clargs.run_name+"Layer_2"+timestamp,"wb")
+    files=[file0,file1, file2]
+    finalarr=[[],[],[]]
+    import pickle
     for i in range(len(corpus.test)):
         st=corpus.test[i].reshape(1, -1).cuda()
         ta=torch.cat([corpus.test[i][1:].cuda(),corpus.test[i][:1].cuda()]).reshape(1,-1)
@@ -364,7 +372,6 @@ if __name__ == '__main__':
         inp['targs_b']=tmp1
         #sent_encoder(batch['input'], task)
         _ , _ = model.sent_encoder.forward(tmp, tasks[0])
-        
         distances = model.sent_encoder._phrase_layer.distances
         for layerID in [0, 1, 2]:
             dc = distances[layerID][1:-1]
@@ -378,8 +385,9 @@ if __name__ == '__main__':
             #corpus_ref[layerID][i] = MRG_labeled(corpus.test_nltktrees[i])
             overlap = model_out.intersection(std_out);f1=compute_f1(overlap, model_out, std_out)
             f1_list[layerID].append(compute_f1(overlap, model_out, std_out))
+            finalarr[layerID].append(model_out)
             lbout, _ = get_brackets(tokens_to_lb(list(sen_cut)))
-            overlap = model_out.intersection(lbout);import pdb;pdb.set_trace()
+            overlap = model_out.intersection(lbout)
             lb_list[layerID].append(compute_f1(overlap, lbout, std_out))
             rbout, _ = get_brackets(tokens_to_rb(list(sen_cut)))
             overlap = model_out.intersection(rbout)
@@ -415,6 +423,7 @@ if __name__ == '__main__':
 
     print("\n")
     for layerId in [0, 1, 2]:
+        pickle.dump(finalarr[layerId], files[layerId])
         print("Layer " + str(layerId))
         print("F1 w GT: ")
         print(mean(f1_list[layerId]))
