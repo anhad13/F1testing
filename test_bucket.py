@@ -358,6 +358,7 @@ if __name__ == '__main__':
     file2=open(clargs.exp_name+"_"+clargs.run_name+"Layer_2"+timestamp,"wb")
     files=[file0,file1, file2]
     finalarr=[[],[],[]]
+    lasttwo=[0,0,0]
     import pickle
     for i in range(len(corpus.test)):
         st=corpus.test[i].reshape(1, -1).cuda()
@@ -384,6 +385,8 @@ if __name__ == '__main__':
             #corpus_sys[layerID][i] = MRG(parse_tree)
             #corpus_ref[layerID][i] = MRG_labeled(corpus.test_nltktrees[i])
             overlap = model_out.intersection(std_out);f1=compute_f1(overlap, model_out, std_out)
+            if (lsen-1, lsen) in model_out:
+                lasttwo[layerID]+=1
             f1_list[layerID].append(compute_f1(overlap, model_out, std_out))
             finalarr[layerID].append(model_out)
             lbout, _ = get_brackets(tokens_to_lb(list(sen_cut)))
@@ -425,6 +428,7 @@ if __name__ == '__main__':
     for layerId in [0, 1, 2]:
         pickle.dump(finalarr[layerId], files[layerId])
         print("Layer " + str(layerId))
+        print("Last two: "+str(lasttwo[layerId]))
         print("F1 w GT: ")
         print(mean(f1_list[layerId]))
         print("F1 w LB: ")
