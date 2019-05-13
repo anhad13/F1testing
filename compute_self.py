@@ -5,11 +5,15 @@ import numpy
 import os
 import sys
 import pickle
-files = sys.argv
-pickled = [pickle.load(open(f, "rb")) for f in files]
+files = sys.argv[1:]
+#ipickled = [pickle.load(open(f, "rb")) for f in files]
+pickled=[]
+for f in files:
+	print(f)
+	pickled.append(pickle.load(open(f, "rb")))
 
 def mean(x):
-    return sum(x) / len(x)
+	return sum(x) / len(x)
 
 
 def compute_f1(overlap, model_out, std_out):
@@ -28,5 +32,5 @@ for i in range(0, len(files)):
 		f1_list=[]
 		for ind in range(0,len(pickled[i])):
 			overlap = pickled[i][ind].intersection(pickled[j][ind])
-	    	f1_list.append(compute_f1(overlap,pickled[i][ind] , pickled[j][ind]))
+			f1_list.append(compute_f1(overlap,pickled[i][ind] , pickled[j][ind]))
 		print(mean(f1_list))
